@@ -41,3 +41,14 @@ def generate_latent_points(latent_dim, n_samples):
     x_input = np.random.randn(latent_dim * n_samples)
     x_input = x_input.reshape(n_samples, latent_dim)
     return x_input
+
+
+# use the generator to generate n fake examples, with class labels
+def generate_fake_samples(generator, latent_dim, n_samples):
+    # generate points in latent space
+    z_input = generate_latent_points(latent_dim, n_samples)
+    # predict outputs
+    images = generator.predict(z_input)
+    # create class labels
+    y = zeros((n_samples, 1))
+    return images, y

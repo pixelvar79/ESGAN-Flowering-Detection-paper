@@ -17,7 +17,7 @@ dir_gt = os.path.join(base_dir, 'groundtruth')
 dir_out = os.path.join(base_dir, 'output', 'head50')
 
 # Print the paths to verify
-print(dir_img)
-print(dir_gt)
-print(dir_out)
+print(f'The images directory is: {dir_img}')
+print(f'The ground truth directory is: {dir_gt}')
+print(f'The output directory is {dir_out}')
 

@@ -7,17 +7,18 @@ import tensorflow as tf
 import gc
 import os
 def load_image(picture):
+    print(picture)
     img = imread(picture)
     img = resize(img, (72, 72, 96))
     return img
 
 def load_dataset(img_dir, gt_dir, task='classification'):
     #print("img_dir:", img_dir)
-    print(Path(img_dir))
+    #print(Path(img_dir))
     #print("Files in img_dir:", os.listdir(img_dir))  # Print contents of img_dir
     img_list = [load_image(file) for file in sorted(Path(img_dir).glob('*.tif'), key=lambda x: int(x.stem.split('_')[1]))]
     #print(img_list)
-    print("img_list:", img_list) 
+    #print("img_list:", img_list) 
     x = np.stack(img_list)
     
     csv_file = Path(gt_dir) / 'MSA_GT.csv'

@@ -4,6 +4,7 @@ from tifffile import imread
 from skimage.transform import resize
 from pathlib import Path
 import os
+
 def load_image(picture):
     print(f'image: {os.path.basename(picture)} is being loaded')
     img = imread(picture)

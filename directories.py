@@ -1,7 +1,4 @@
 import os
-from tifffile import imread
-from skimage.transform import resize
-from pathlib import Path
 
 # Set base directory
 # Get the current directory of the script

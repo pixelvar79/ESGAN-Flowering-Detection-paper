@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import zeros
 from numpy.random import randint
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -13,7 +14,9 @@ def load_real_samples(X111, y111):
 
 def select_supervised_samples(dataset, n_samples, n_classes=2):
     X, _, y, _ = dataset
-    X_list, y_list = []
+    #X_list, y_list = []
+    X_list = []
+    y_list = []
     n_per_class = int(n_samples / n_classes)
     for i in range(n_classes):
         X_with_class = X[y == i]

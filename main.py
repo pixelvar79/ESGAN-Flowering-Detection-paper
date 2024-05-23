@@ -5,14 +5,15 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import pyplot
 from numpy import ones
-
+from numpy import zeros
+from PIL import Image as Img
 from directories import dir_img, dir_gt, dir_out
 from data_utils import load_dataset, preparing_data
 from models import define_discriminator, define_generator, define_gan
 from gan_utils import load_real_samples, select_supervised_samples, generate_real_samples, generate_real_samples1, generate_latent_points, generate_fake_samples
 
 # train the generator and discriminator
-def train(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=160):
+def train(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=20):
     # select supervised dataset 
     print(n_batchs)
     X_sup, y_sup = select_supervised_samples(dataset,sample1)
@@ -30,17 +31,14 @@ def train(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=16
         gc.collect()
         [Xsup_real, ysup_real], _ = generate_real_samples([X_sup, y_sup], half_batch)
         c_loss, c_acc = c_model.train_on_batch(Xsup_real, ysup_real)
-        #print('X_sup', Xsup_real.shape)
         
         # update unsupervised discriminator (d)
         [X_real, _], y_real = generate_real_samples1(dataset, half_batch)
         d_loss1 = d_model.train_on_batch(X_real, y_real)
-        
-        #print('X_real', X_real.shape)
+ 
         X_fake, y_fake = generate_fake_samples(g_model, latent_dim, half_batch)
         d_loss2 = d_model.train_on_batch(X_fake, y_fake)
-        #print('X_fake' , X_fake.shape)
-        
+   
         # update generator (g)
         X_gan, y_gan = generate_latent_points(latent_dim, n_batchs), ones((n_batchs, 1))
         g_loss = gan_model.train_on_batch(X_gan, y_gan)
@@ -111,8 +109,11 @@ X, y, y1, y11 = load_dataset(dir_img, dir_gt, task='classification2')
 # Prepare data
 X111, yy = preparing_data(X, y, y1, y11)
 
+print(f'input images dimension is: {X111.shape}')
+print(f'input response variable dimension is {yy.shape}')
+
 # Load real samples
-dataset = load_real_samples(X111, yy)
+#dataset = load_real_samples(X111, yy)
 
 # size of the latent space
 latent_dim = 100
@@ -123,19 +124,16 @@ g_model = define_generator(latent_dim)
 # create the gan
 gan_model = define_gan(g_model, d_model)
 # load image data
-percents = (2400,)
-#percents = (30,60,100,300,900,1800,2400,3000)
-#batchs = (10,16,30,40,50,50,70,70)
+#percents = (2400,)
+percents = (30,60,100,300,900,1800,2400,3000)
+batchs = (10,16,30,40,50,50,70,70)
 #batchs = (10,20,30,50,50,50,50,50)
-batchs = (50,)
+#batchs = (50,)
 
-# for j in range(1):
-#     for sample1,n_batchs in zip(percents,batchs):
-#         #load random split of data
-#         dataset = load_real_samples()
-#         # train model
-#         train(g_model, d_model, c_model, gan_model, dataset, latent_dim)
+for j in range(3):
+    for sample1,n_batchs in zip(percents,batchs):
+        #load random split of data
+        dataset = load_real_samples(X111,yy)
+        # train model
+        train(g_model, d_model, c_model, gan_model, dataset, latent_dim)
 
-
-# Train the GAN
-# train_gan(g_model, d_model, gan_model, dataset, latent_dim, n_epochs=100, n_batch=128)

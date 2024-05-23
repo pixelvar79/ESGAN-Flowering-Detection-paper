@@ -3,11 +3,9 @@ import pandas as pd
 from tifffile import imread
 from skimage.transform import resize
 from pathlib import Path
-import tensorflow as tf
-import gc
 import os
 def load_image(picture):
-    print(picture)
+    print(f'image: {os.path.basename(picture)} is being loaded')
     img = imread(picture)
     img = resize(img, (72, 72, 96))
     return img
@@ -37,8 +35,7 @@ def load_dataset(img_dir, gt_dir, task='classification'):
     return x, y, y1, y11
 
 def preparing_data(X, y, y1, y11, dates=('247', '262', '279')):
-    tf.keras.backend.clear_session()
-    gc.collect()
+    print(f'data is being prepared according to the input format')
     
     slices = ((dates[0], slice(61, 64)), (dates[1], slice(67, 70)), (dates[2], slice(73, 76)))
     

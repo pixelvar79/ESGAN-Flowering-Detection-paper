@@ -29,7 +29,7 @@ try:
     check_gpu()
 
     #  train the models
-    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=100):
+    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=10):
         
         print(n_batchs)
         X_sup, y_sup = select_supervised_samples(dataset, sample1)
@@ -44,9 +44,9 @@ try:
             
             # Define file names based on the current step
             filename1 = 'generated_plot_%04d_1.png' % (i+1)
-            filename3 = f'c_model_%04d_GAN_{sample1}_{j}.h5' % (i+1)
+            filename3 = f'c_model_%04d_ESGAN_{sample1}_{j}.h5' % (i+1)
             
-            # Check if files already exist skips the iteration
+            # Check if files already exist, if so it skips the iteration
             if os.path.exists(filename1) and os.path.exists(filename3):
                 print(f'Skipping iteration {i+1} as files already exist.')
                 continue

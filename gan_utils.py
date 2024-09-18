@@ -19,8 +19,17 @@ def load_real_samples(X111, y111):
     return [x_train, x_test, y_train, y_test]
 
 
-def load_real_samples1(X, y):
+def load_real_samples1(X111, y111):
     
+    # Normalize the images to the range [-1, 1]
+    X1111 = (X111 - 0.5) / 0.5
+    # Encode the labels as integers
+    encoder = LabelEncoder()
+    encoder.fit(y111)
+    y1111 = encoder.transform(y111)
+    # Split the data into training and testing sets
+    x_train, x_test, y_train, y_test = train_test_split(X1111, y1111, train_size=0.8, random_state=123)
+    return [x_train, x_test, y_train, y_test]
     
 # Select supervised samples from the dataset
 # This function selects a specified number of samples for each class from the dataset.

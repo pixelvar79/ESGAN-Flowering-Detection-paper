@@ -6,7 +6,7 @@ import cv2
 
 # Define input and output directories
 input_dir = '../images'
-output_dir = '../images1'
+output_dir = '../images11'
 
 # Ensure output directory exists
 os.makedirs(output_dir, exist_ok=True)
@@ -18,7 +18,8 @@ def list_tiff_files(directory):
 tiff_files = list_tiff_files(input_dir)
 
 # Slices to keep
-selected_slices = [slice(61, 64), slice(67, 70), slice(73, 76)]
+#selected_slices = [slice(61, 64), slice(67, 70), slice(73, 76), slice(79,82)]
+selected_slices = [slice(61, 64), slice(67, 70), slice(73, 76), slice(79,82)]
 #discard_slices = [slice(25, 31)]
 
 # Function to resize image using OpenCV

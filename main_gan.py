@@ -29,7 +29,7 @@ try:
     check_gpu()
 
     #  train the models
-    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=10):
+    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=50):
         
         print(n_batchs)
         X_sup, y_sup = select_supervised_samples(dataset, sample1)
@@ -92,13 +92,13 @@ try:
             arr = arr[:, :, [2,1,0]]
             img = Img.fromarray(arr.astype('uint8'), 'RGB')
             plt.imshow(img)
-        filename1 = 'generated_plot_%04d_1.png' % (step+1)
+        filename1 = f'generated_plot_%04d_ESGAN_{sample1}_{j}.png' % (step+1)
         plt.savefig(filename1)
         plt.close()
         _, Xtest, _, ytest = dataset
         _, acc = c_model.evaluate(Xtest, ytest, verbose=0)
         print('Classifier Accuracy: %.3f%%' % (acc * 100))
-        filename3 = f'c_model_%04d_GAN_{sample1}_{j}.h5' % (step+1)
+        filename3 = f'c_model_%04d_ESGAN_{sample1}_{j}.h5' % (step+1)
         c_model.save(filename3)
         print('>Saved: %s' % (filename3))
 
@@ -135,7 +135,7 @@ try:
     batchs = (10,16,30,40,50,50,70,70) 
 
     # training the gan model for each percentage of labeled data
-    for j in range(3):
+    for j in range(5):
         for sample1, n_batchs in zip(percents, batchs):
             
             dataset = load_real_samples(X, y)

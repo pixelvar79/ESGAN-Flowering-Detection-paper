@@ -12,6 +12,7 @@ from skimage.transform import resize as skimage_resize
 import os
 from tensorflow.keras.applications.resnet50 import preprocess_input
 
+
 def calculate_tabular_stats(X):
     print('generating tabular statistics...')
     statslist = []
@@ -56,7 +57,6 @@ def calculate_tabular_stats(X):
 
     return stats_df
 
-
 def subset_split(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2):
     print(f'generating split of tabular data {nsample}...')
     x_train1 = pd.DataFrame()
@@ -66,10 +66,13 @@ def subset_split(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2):
     encoder = LabelEncoder()
     encoder.fit(y_var)
     y_var = encoder.transform(y_var)
+    
+     # Create a DataFrame to hold the indices
+    indices = pd.DataFrame(x_var.index)
 
     # Split the data into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(x_var, y_var, train_size=0.8, random_state=RANDOM_STATE)
-
+    x_train, x_test, y_train, y_test, index_train, index_test = train_test_split(x_var, y_var, indices, train_size=0.8, random_state=RANDOM_STATE)
+    
     # balanced number of samples per class
     n_per_class = int(nsample / n_classes)
     for i in range(n_classes):
@@ -83,9 +86,9 @@ def subset_split(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2):
         y_train1 = y_train1.append(Y_with_class.iloc[ix], ignore_index=True)
     
     # Split the subset into training and validation sets
-    x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1, train_size=0.8, random_state=RANDOM_STATE)
+    x_train1, x_val, y_train1, y_val  = train_test_split(x_train1, y_train1, train_size=0.8, random_state=RANDOM_STATE)
     
-    return x_train1, x_val, y_train1, y_val, x_test, y_test
+    return x_train1, x_val, y_train1, y_val, x_test, y_test, index_train, index_test
 
 
 def subset_split1(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2, resize_images=False):
@@ -111,8 +114,11 @@ def subset_split1(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2, resize_i
         print(f'generating split for small CNN... {nsample}')
         x_var = np.stack(x_var, axis=0)
         
+    # Create a DataFrame to hold the indices
+    indices = pd.DataFrame(range(len(x_var)), columns=['index'])
+        
     # Split the data into training and testing sets
-    x_train, x_test, y_train, y_test = train_test_split(x_var, y_var, train_size=0.8, random_state=RANDOM_STATE)
+    x_train, x_test, y_train, y_test, index_train, index_test  = train_test_split(x_var, y_var, indices, train_size=0.8, random_state=RANDOM_STATE)
     
     X_list, y_list = list(), list()
     n_per_class = int(nsample / n_classes)  # Number of samples per class
@@ -129,10 +135,10 @@ def subset_split1(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2, resize_i
     # Split the subset into training and validation sets
     x_train1, x_val, y_train1, y_val = train_test_split(x_train1, y_train1, train_size=0.8, random_state=RANDOM_STATE)
     
-    return x_train1, x_val, y_train1, y_val, x_test, y_test
-
+    return x_train1, x_val, y_train1, y_val, x_test, y_test, index_train, index_test
 
 def store_roc_results(model, nsample, iteration, x_test, y_test, outdir):
+
     print(f'generating ROC results for {model} {nsample}...')
     list_fpr = []
     list_tpr = []
@@ -161,26 +167,136 @@ def store_roc_results(model, nsample, iteration, x_test, y_test, outdir):
     np.save(os.path.join(outdir, f'{model_name}_{nsample}_{iteration}_fpr.npy'), list_fpr)
     np.save(os.path.join(outdir, f'{model_name}_{nsample}_{iteration}_tpr.npy'), list_tpr)
     
+# Function to update model name based on conditions
+def update_model_name(model_name):
+    if 'transf' in model_name:
+        return 'ResNet-50'
+    elif 'smallcnn' in model_name:
+        return 'CNN'
+    elif 'KNN' in model_name:
+        return 'KNN'
+    elif 'rf' in model_name:
+        return 'RF'
+    else:
+        return 'Unknown'
 
-def summary_metrics(model, nsample, y_val, preds, outdir, iter):
-    # Assuming model_name is a string representing the model's name
-    print(f'generating summary metrics for {model} {nsample}...')
-    model_name = model.__class__.__name__
+def save_predictions(predictions,  concdateID, floweringdate, outdir):
     
-    # Create a DataFrame to store the metrics
-    mdf = pd.DataFrame()
+    results = []
     
-    # Calculate metrics (example)
-    mdf['accuracy'] = [accuracy_score(y_val, preds)]
-    mdf['precision'] = [precision_score(y_val, preds, average='weighted')]
-    mdf['recall'] = [recall_score(y_val, preds, average='weighted')]
-    mdf['f1'] = [f1_score(y_val, preds, average='weighted')]
-    
-    # Add model name to the DataFrame
-    mdf['model'] = model_name
-    
-    # Save the DataFrame to a CSV file
-    mdf.to_csv(f'{outdir}/metrics_{model_name}_{nsample}_{iter}.csv', index=False)
+    # Mapping for concdateID to flowering_date_uav_estimate
+    concdateID_to_flowering_date = {
+        'M1111': 247,
+        'M0111': 262,
+        'M0011': 279
+        #'M0001': 296
+    }
 
+    # Sample size label mapping
+    sample_size_mapping = {
+        30: 1,
+        60: 2,
+        100: 3,
+        300: 10,
+        900: 30,
+        1800: 60,
+        2400: 80,
+        3000: 100
+    }
 
+    for model_name, data in predictions.items():
+    # Extract sample_size_label and updated model_name
+        parts = model_name.split('_')
+        sample_size_label = int(parts[0])
+        updated_model_name = update_model_name(parts[1])
+        
+        indices = data['index_test'].values  # Corrected to access the values directly
+        y_pred = data['y_pred']
+        y_test = data['y_test']
+        iteration_n = data['iteration']# Assuming y_test is available in the data dictionary
+        for i, idx in enumerate(indices):
+            concdate = concdateID.iloc[idx].item()
+            flowering_date = floweringdate.iloc[idx].item()
+            flowering_date_uav_estimate = concdateID_to_flowering_date.get(concdate, None)
+            sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
+            
+            results.append({
+                'pred_test': y_pred[i],
+                'y_test': y_test[i],  # Add y_test to the results
+                'model_name': updated_model_name,
+                'model_name_original': model_name,
+                'sample_size_label': sample_size_label,
+                'sample_size_label1': sample_size_label1,
+                'index_test': idx,
+                'concdateID': concdate,
+                'flowering_date': flowering_date,
+                'flowering_date_uav_estimate': flowering_date_uav_estimate,
+                'iteration_n': iteration_n
+            })
+
+    # Convert results to DataFrame
+    results_df = pd.DataFrame(results)
+
+    # Save the results DataFrame to a CSV file
+    results_df.to_csv(os.path.join(outdir, 'benchmarks_models_predictions_and_y_test.csv'), index=False)
+
+    print('Predictions and y_test values saved successfully.')
+    
+def summary_metrics(predictions, outdir):
+    
+    # Sample size label mapping
+    sample_size_mapping = {
+        30: 1,
+        60: 2,
+        100: 3,
+        300: 10,
+        900: 30,
+        1800: 60,
+        2400: 80,
+        3000: 100
+    }
+
+    metrics = []
+    for model_name_original, data in predictions.items():
+        # Extract sample_size_label and updated model_name
+        parts = model_name_original.split('_')
+        sample_size_label = int(parts[0])
+        updated_model_name = update_model_name(parts[1])
+        
+        indices = data['index_test']
+        y_pred = data['y_pred']
+        y_test = data['y_test']
+        iteration_n = data['iteration']
+        
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average='weighted')
+        recall = recall_score(y_test, y_pred, average='weighted')
+        f1 = f1_score(y_test, y_pred, average='weighted')
+        
+        sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
+        
+        metrics.append({
+            'model_name': updated_model_name,
+            'model_name_original': model_name_original,
+            'sample_size_label': sample_size_label,
+            'sample_size_label1': sample_size_label1,
+            'accuracy': accuracy,
+            'precision': precision,
+            'recall': recall,
+            'f1': f1,
+            'iteration_n': iteration_n
+        
+        })
+
+    # Convert metrics to DataFrame
+    metrics_df = pd.DataFrame(metrics)
+
+    # Print the results DataFrame
+    print("Results DataFrame:")
+    print(metrics_df)
+
+    # Save the results DataFrame to a CSV file
+    metrics_df.to_csv(os.path.join(outdir, 'benchmarks_models_metrics.csv'), index=False)
+
+    print('CSV saved successfully.')
 

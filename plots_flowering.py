@@ -303,7 +303,6 @@
 
 # print('Plots saved successfully.')
 
-
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -335,7 +334,6 @@ plt.figure(figsize=(14, 10))
 sns.set(font_scale=1.9)
 sns.set_style("ticks")
 
-
 def plot_metrics(col):
     plt.figure()
     ax = sns.barplot(data=both,
@@ -354,5 +352,7 @@ def plot_metrics(col):
 
 for col in columns_to_keep[2:]:
     plot_metrics(col)
+
+
 
 #plt.show()

@@ -27,5 +27,5 @@ This was the last version of Tensorflow in native Windows that supports GPU, oth
 
 This is a description on how py files are strcutured for implementing the manuscript analysis.
 
-## Screenshot
-![App Screenshot](./workflow.png)
+## Diagram 
+![App Implementation](./workflow.png)

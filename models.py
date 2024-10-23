@@ -19,7 +19,8 @@ import os
 # This is considered useful in adversarial training scenarios where the discriminator's 
 # output needs to be in a certain range to stabilize training.
 def custom_activation(output):
-    logexpsum = backend.sum(backend.exp(output), axis=-1, keepdims=True)
+    #logexpsum = backend.sum(backend.exp(output), axis=-1, keepdims=True)
+    logexpsum = K.sum(K.exp(output), axis=-1, keepdims=True)
     result = logexpsum / (logexpsum + 1.0)
     return result
 
@@ -210,7 +211,7 @@ def train_smallcnn(x_train1, y_train1, x_val, y_val, nsample, outdir, iter):
     MODEL_PATH = os.path.join(outdir, MODEL_NAME) 
     
     #OPT = tf.keras.optimizers.Adam(learning_rate=LR, decay=DC)
-    es = callbacks.EarlyStopping(monitor=METRIC_VAR, verbose=1, mode=MODE, min_delta=0.01, patience=5)
+    es = callbacks.EarlyStopping(monitor=METRIC_VAR, verbose=1, mode=MODE, min_delta=0.01, patience=20)
     mc = callbacks.ModelCheckpoint(MODEL_PATH, monitor=METRIC_VAR, mode=MODE, save_best_only=True, verbose=1)
     
     model = Sequential()

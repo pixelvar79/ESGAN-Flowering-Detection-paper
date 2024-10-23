@@ -1,143 +1,351 @@
-
-
-
-# from data_loader import load_dataset1, load_dataset
-# from directories import dir_img, dir_img1, dir_gt, dir_out
-# import numpy as np
+# import pandas as pd
 # import matplotlib.pyplot as plt
+# import seaborn as sns
+# import numpy as np
+# import os
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-# # Load dataset
-# X, df, floweringdate, concdateID = load_dataset1(dir_img1, dir_gt)
+# # Ensure the output directory exists
+# dir_fig = '../output/predictions_09222024'
+# os.makedirs(dir_fig, exist_ok=True)
 
-# # Extract relevant columns
-# y = df['f50_head_0904']
-# y1 = df['f50_head_0919']
-# y11 = df['f50_head_1005']
-# y111 = df['f50_head_1022']
+# # Load the CSV files into DataFrames
+# benchmark_df = pd.read_csv(os.path.join(dir_fig, 'benchmarks_models_predictions_and_y_test.csv'))
+# best_gan_df = pd.read_csv(os.path.join(dir_fig, 'gan_models_predictions_and_y_test.csv'))
+# benchmark_df = benchmark_df[benchmark_df['iteration_n'] == 0]
 
-# # Define dates
-# dates = ['247', '262', '279', '296']
-# # Count flowering events for each date
-# flowering_counts = {
-#     '247': (y == 1).sum(),
-#     '262': (y1 == 1).sum(),
-#     '279': (y11 == 1).sum(),
-#     '296': (y111 == 1).sum()
+# # Define the columns to keep
+# columns_to_keep = ['model_name', 'sample_size_label1', 'pred_test', 'y_test', 'grouping']
+
+# # Subset the columns needed from each DataFrame
+# benchmark_df = benchmark_df[columns_to_keep]
+# best_gan_df = best_gan_df[columns_to_keep]
+
+# both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
+
+# # Define a custom palette with hexadecimal color codes
+# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B']
+
+# def calculate_metrics(group):
+#     accuracy = accuracy_score(group['y_test'], group['pred_test'])
+#     precision = precision_score(group['y_test'], group['pred_test'], average='weighted')
+#     recall = recall_score(group['y_test'], group['pred_test'], average='weighted')
+#     f1 = f1_score(group['y_test'], group['pred_test'], average='weighted')
+#     return pd.Series({
+#         'accuracy': accuracy,
+#         'precision': precision,
+#         'recall': recall,
+#         'f1': f1
+#     })
+
+# # Group by model_name, sample_size_label1, and grouping and calculate metrics
+# grouped_metrics = both.groupby(['model_name', 'sample_size_label1', 'grouping']).apply(calculate_metrics).reset_index()
+
+# # Define the order of models
+# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
+
+# # Define y-axis labels for each metric
+# y_axis_labels = {
+#     'accuracy': 'Accuracy',
+#     'precision': 'Precision',
+#     'recall': 'Recall',
+#     'f1': 'F1 Score'
 # }
 
-# # Count not-flowering events for each date
-# not_flowering_counts = {
-#     '247': (y == 0).sum(),
-#     '262': (y1 == 0).sum(),
-#     '279': (y11 == 0).sum(),
-#     '296': (y111 == 0).sum()
-# }
+# def plot_metrics(col, flowering_date):
+#     data = grouped_metrics[grouped_metrics['grouping'] == flowering_date]
+#     # Set plot settings
+#     plt.figure(figsize=(16, 10))
+#     sns.set_theme(font_scale=2.9)
+#     sns.set_style("ticks")
+    
+#     ax = sns.barplot(data=data,
+#                      x='sample_size_label1',
+#                      y=col,
+#                      hue='model_name',
+#                      hue_order=model_order,  # Set the order of models
+#                      alpha=0.8,
+#                      linewidth=2,
+#                      palette=palette)  # Use the custom palette
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
+#     ax.yaxis.set_ticks(np.arange(0, 1.1, 0.2))
+    
+#     # Move the legend and set its title
+#     legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+    
+#     ax.set_xlabel("% Annotated samples")
+#     ax.set_ylabel(y_axis_labels[col])  # Set the y-axis label based on the metric
+#     ax.set_ylim([0, 1])
+    
+#     # Add text annotations
+#     sample_size_label = data['sample_size_label1'].unique()[0]  # Get the sample size label
+#     #plt.text(0.5, -0.1, f'Flowering time = {flowering_date}', fontsize=20, transform=ax.transAxes, color='black')
+#     plt.title(f'Flowering time = {flowering_date}', fontsize=20, color='black')
 
-# from scipy.interpolate import PchipInterpolator
+#     plt.tight_layout()  # Adjust the layout to fit elements properly
+#     plt.savefig(os.path.join(dir_fig, f'{col}_flowering_date_{flowering_date}_figures.png'), bbox_inches='tight')
+#     plt.close()
+
+# flowering_dates = grouped_metrics['grouping'].unique()
+# for col in ['accuracy', 'precision', 'recall', 'f1']:
+#     for flowering_date in flowering_dates:
+#         plot_metrics(col, flowering_date)
+        
+        
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import numpy as np
 # import os
 
-# total_counts = {date: flowering_counts[date] + not_flowering_counts[date] for date in dates}
+# # Ensure the output directory exists
+# dir_fig = '../output/predictions_09222024'
+# os.makedirs(dir_fig, exist_ok=True)
 
-# # Convert counts to percentages
-# flowering_percentages = {date: (flowering_counts[date] / total_counts[date]) * 100 for date in dates}
+# # Load the CSV files into DataFrames
+# benchmark_df = pd.read_csv(os.path.join(dir_fig, 'benchmarks_models_predictions_and_y_test.csv'))
+# best_gan_df = pd.read_csv(os.path.join(dir_fig, 'gan_models_predictions_and_y_test.csv'))
+# benchmark_df = benchmark_df[benchmark_df['iteration_n'] == 0]
 
-# # Plot the percentages
-# plt.figure(figsize=(10, 6))
-# bar_width = 0.35
-# index = np.arange(len(dates))
+# # Define the columns to keep
+# columns_to_keep = ['model_name', 'sample_size_label1', 'pred_test', 'y_test', 'grouping']
 
-# # Plot flowering events (bottom part of the bar)
-# plt.bar(index, list(flowering_percentages.values()), bar_width, color='orange', edgecolor='black', label='Flowered')
+# # Subset the columns needed from each DataFrame
+# benchmark_df = benchmark_df[columns_to_keep]
+# best_gan_df = best_gan_df[columns_to_keep]
 
-# # Add a smoother trend line using PCHIP interpolation
-# x_new = np.linspace(index.min(), index.max(), 300)
-# pchip = PchipInterpolator(index, list(flowering_percentages.values()))
-# y_smooth = pchip(x_new)
-# plt.plot(x_new, y_smooth, "r--", label='_nolegend_', color='black')
+# # Concatenate the DataFrames
+# both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
 
-# plt.xlabel('Dates of field evaluation for determining flowering date (Julian Dates)', fontsize=14)
-# plt.ylabel('Flowered Events (% of total)', fontsize=14)
-# plt.xticks(index, dates, fontsize=12)
-# plt.yticks([0, 20, 40, 60, 80, 100], fontsize=12)  # Manually set y-ticks
-# plt.ylim(0, 110)  # Extend y-axis to 110
-# plt.tight_layout()
-# plt.savefig(os.path.join('../output/models_performance and figures', 'flowering_events_by_date.png'))
-# plt.show()
+# # Ensure 'grouping' is treated as numerical values
+# both['grouping'] = pd.to_numeric(both['grouping'], errors='coerce')
+
+# # Define a custom palette with hexadecimal color codes
+# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
+
+# # Define the order of models
+# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
+
+# # Function to plot bar plots for pred_test
+# def plot_pred_test(sample_size_label):
+#     data = both[both['sample_size_label1'] == sample_size_label]
+    
+#     # Count the occurrences of the event 1 in pred_test
+#     event_counts = data[data['pred_test'] == 1].groupby(['grouping', 'model_name']).size().reset_index(name='event_count')
+    
+#     # Count the occurrences of the event 1 in y_test for a reference model (e.g., 'KNN')
+#     reference_model = 'KNN'
+#     ground_truth_counts = data[(data['model_name'] == reference_model) & (data['y_test'] == 1)].groupby('grouping').size().reset_index(name='event_count')
+#     ground_truth_counts['model_name'] = 'Ground-Truth'
+    
+#     # Append ground-truth counts to event_counts
+#     event_counts = pd.concat([event_counts, ground_truth_counts], ignore_index=True)
+    
+#     # Debugging: Print the shape and content of event_counts
+#     print(f"Event counts for sample_size_label={sample_size_label}:")
+#     print(event_counts.head())
+#     print(f"Shape of event_counts: {event_counts.shape}")
+    
+#     # Skip plotting if event_counts is empty
+#     if event_counts.empty:
+#         print(f"No data to plot for sample_size_label={sample_size_label}. Skipping.")
+#         return
+    
+#     # Set plot settings
+#     plt.figure(figsize=(14, 10))
+#     sns.set_theme(font_scale=2.9)
+#     sns.set_style("ticks")
+    
+#     ax = sns.barplot(data=event_counts,
+#                      x='grouping',
+#                      y='event_count',
+#                      hue='model_name',
+#                      hue_order=model_order + ['Ground-Truth'],  # Include Ground-Truth in the order
+#                      alpha=0.8,
+#                      linewidth=2,
+#                      palette=palette + ['#FF0000'])  # Add a color for Ground-Truth
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
+    
+#     # Move the legend and set its title
+#     legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+    
+#     ax.set_xlabel("Flowering time (Julian Dates)")
+#     ax.set_ylabel("N flowering events detected")  # Set the y-axis label
+    
+#     # Add polynomial trend line for ESGAN
+#     esgan_data = event_counts[event_counts['model_name'] == 'Ground-Truth']
+#     if not esgan_data.empty:
+#         # Get the x-axis positions of the groupings
+#         x_positions = esgan_data['grouping'].values
+#         y_values = esgan_data['event_count'].values
+        
+#         # Debugging: Print x_positions and y_values
+#         print(f"x_positions for Ground-truth: {x_positions}")
+#         print(f"y_values for Ground-truth: {y_values}")
+        
+#         if len(x_positions) >= 2:
+#             # Fit a polynomial of degree 2 (quadratic trend line)
+#             poly_coeffs = np.polyfit(x_positions, y_values, 2)
+#             poly_fit = np.polyval(poly_coeffs, x_positions)
+            
+#             # Debugging: Print poly_fit values
+#             print(f"poly_fit values for Ground-truth: {poly_fit}")
+            
+#             # Get the actual x-tick positions used by the bar plot
+#             xticks = ax.get_xticks()
+#             xticklabels = [int(label.get_text()) for label in ax.get_xticklabels()]
+#             print(f"xticks: {xticks}")
+#             print(f"xticklabels: {xticklabels}")
+            
+#             # Map the x_positions to the actual x-tick positions
+#             x_positions_mapped = [xticks[xticklabels.index(x)] for x in x_positions]
+#             print(f"x_positions_mapped for Ground-truth: {x_positions_mapped}")
+            
+#             ax.plot(x_positions_mapped, poly_fit, label='Ground-truth Trend', linestyle='--', color='black')
+    
+#     plt.tight_layout()  # Adjust the layout to fit elements properly
+#     plt.savefig(os.path.join(dir_fig, f'pred_test_count_{sample_size_label}.png'), bbox_inches='tight')
+#     plt.close()
+
+# # Generate plots for each sample size label
+# sample_size_labels = both['sample_size_label1'].unique()
+# for sample_size_label in sample_size_labels:
+#     plot_pred_test(sample_size_label)
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import os
+
+# Ensure the output directory exists
+dir_fig = '../output/predictions_09222024'
+os.makedirs(dir_fig, exist_ok=True)
+
+# Load the CSV files into DataFrames
+benchmark_df = pd.read_csv(os.path.join(dir_fig, 'benchmarks_models_predictions_and_y_test.csv'))
+best_gan_df = pd.read_csv(os.path.join(dir_fig, 'gan_models_predictions_and_y_test.csv'))
+benchmark_df = benchmark_df[benchmark_df['iteration_n'] == 0]
+
+# Define the columns to keep
+columns_to_keep = ['model_name', 'sample_size_label1', 'pred_test', 'y_test', 'grouping']
+
+# Subset the columns needed from each DataFrame
+benchmark_df = benchmark_df[columns_to_keep]
+best_gan_df = best_gan_df[columns_to_keep]
+
+# Concatenate the DataFrames
+both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
+
+# Ensure 'grouping' is treated as numerical values
+both['grouping'] = pd.to_numeric(both['grouping'], errors='coerce')
+
+print(both)
+
+# Exclude rows where 'grouping' is 296
+both = both[both['grouping'] != 296]
+
+# Define a custom palette with hexadecimal color codes
+palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
+
+# Define the order of models
+model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
+
+# Define dash patterns for all models
+dashes = {
+    'KNN': '',
+    'RF': '',
+    'CNN': '',
+    'ResNet-50': '',
+    'ESGAN': '',
+    'Ground-Truth': (5, 2)  # Set Ground-Truth line to be dashed
+}
+
+# List of sample sizes
+l = [32, 64, 94, 314, 941, 1884, 2509, 3137]
+
+# Function to plot line plots for pred_test
+def plot_pred_test(sample_size_label, n_value):
+    data = both[both['sample_size_label1'] == sample_size_label]
+    
+    # Count the occurrences of the event 1 in pred_test
+    event_counts = data[data['pred_test'] == 1].groupby(['grouping', 'model_name']).size().reset_index(name='event_count')
+    
+    # Count the occurrences of the event 1 in y_test for a reference model (e.g., 'KNN')
+    reference_model = 'KNN'
+    ground_truth_counts = data[(data['model_name'] == reference_model) & (data['y_test'] == 1)].groupby('grouping').size().reset_index(name='event_count')
+    ground_truth_counts['model_name'] = 'Ground-Truth'
+    
+    # Append ground-truth counts to event_counts
+    event_counts = pd.concat([event_counts, ground_truth_counts], ignore_index=True)
+    
+    # Debugging: Print the shape and content of event_counts
+    print(f"Event counts for sample_size_label={sample_size_label}:")
+    print(event_counts.head())
+    print(f"Shape of event_counts: {event_counts.shape}")
+    
+    # Skip plotting if event_counts is empty
+    if event_counts.empty:
+        print(f"No data to plot for sample_size_label={sample_size_label}. Skipping.")
+        return
+    
+    # Set plot settings
+    plt.figure(figsize=(16, 10))
+    sns.set_theme(font_scale=3.2)
+    sns.set_style("ticks")
+    
+    ax = sns.lineplot(data=event_counts,
+                      x='grouping',
+                      y='event_count',
+                      hue='model_name',
+                      hue_order=model_order + ['Ground-Truth'],  # Include Ground-Truth in the order
+                      palette=palette,  # Use the updated palette
+                      markers=True,  # Add markers to the lines
+                      style='model_name',  # Different styles for different models
+                      dashes=dashes,  # Set dash patterns for all models
+                      linewidth=3.5,  # Increase line thickness
+                      markersize=20)  # Increase marker size
+    
+    # Set x-axis ticks from 240 to 300, separated by 5 days
+    x_ticks = np.arange(245, 280, 5)
+    plt.xticks(x_ticks)
+    
+    ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
+    
+    # Move the legend and set its title
+    legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+    
+    ax.set_xlabel("Flowering time (Julian Dates)")
+    ax.set_ylabel("N Flowering events detected")  # Set the y-axis label
+    
+    # Add text annotations
+    plt.text(0.8, 0.25, f'{sample_size_label}%', fontsize=40, transform=ax.transAxes)
+    plt.text(0.8, 0.20, f'(n={n_value})', fontsize=30, transform=ax.transAxes)
+    
+    plt.tight_layout()  # Adjust the layout to fit elements properly
+    plt.savefig(os.path.join(dir_fig, f'pred_test_count_{sample_size_label}.png'), bbox_inches='tight')
+    plt.close()
+
+# Generate plots for each sample size label
+sample_size_labels = both['sample_size_label1'].unique()
+for sample_size_label, n_value in zip(sample_size_labels, l):
+    plot_pred_test(sample_size_label, n_value)
 
 # import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
 # import os
 
-# # Define the path to the directory containing the CSV files
-# directory_path = '../output/head501'
+# # # Ensure the output directory exists
+# dir_fig = '../output/predictions_09222024'
 
-# # Define the specific CSV files to open
-# csv_files = [
-#     'modified_flowering_determination_best_gan_models.csv',
-#     'modified_flowering_determination_benchmark_models.csv'
-# ]
+# # # Load the CSV files into DataFrames
+# training_times_df = pd.read_csv(os.path.join(dir_fig, 'training_times_benchmarks.csv'))
 
-# # Construct the full file paths
-# csv_file_paths = [os.path.join(directory_path, file) for file in csv_files]
-
-# # Read the specific CSV files into DataFrames
-# dataframes = [pd.read_csv(file) for file in csv_file_paths]
-
-# # Optionally, you can print the names of the files and the first few rows of each DataFrame
-# for file, df in zip(csv_file_paths, dataframes):
-#     print(f'File: {file}')
-#     print(df.tail())
-#     print('\n')
-
-# import pandas as pd
-# import os
-
-# # Define the path to the directory containing the CSV file
-# directory_path = '../output/head501'
-
-# # Define the specific CSV file to open
-# csv_file = 'flowering_determination_benchmark_models.csv'
-
-# # Construct the full file path
-# csv_file_path = os.path.join(directory_path, csv_file)
-
-# # Read the CSV file into a DataFrame
-# df = pd.read_csv(csv_file_path)
-
-# # Add a new column 'sample_size_label' by extracting the first string as a number from 'model_name'
-# df['sample_size_label'] = df['model_name'].str.extract(r'(\d+)').astype(int)
-
-# # Define the path to save the modified CSV file
-# output_directory = '../output/head501'
-# os.makedirs(output_directory, exist_ok=True)
-# output_file_path = os.path.join(output_directory, csv_file)
-
-# # Save the modified DataFrame to a new CSV file
-# df.to_csv(output_file_path, index=False)
-
-# print(f'Modified CSV file saved to: {output_file_path}')
-
-
-# import pandas as pd
-# import os
-
-# # Define the path to the directory containing the CSV files
-# directory_path = '../output/head501'
-
-# # Define the specific CSV files to open
-# csv_files = [
-#     'flowering_determination_best_gan_models.csv',
-#     'flowering_determination_benchmark_models.csv'
-# ]
-
-# # Construct the full file paths
-# csv_file_paths = [os.path.join(directory_path, file) for file in csv_files]
-
-# # Function to determine the final model name based on the pattern in model_name
-# def determine_final_model_name(model_name):
+# # Function to update model name based on conditions
+# def update_model_name(model_name):
 #     if 'TRANSF' in model_name:
 #         return 'ResNet-50'
-#     elif 'GAN' in model_name:
-#         return 'ESGAN'
 #     elif 'SMALLCNN' in model_name:
 #         return 'CNN'
 #     elif 'KNN' in model_name:
@@ -147,212 +355,145 @@
 #     else:
 #         return 'Unknown'
 
-# # Read the specific CSV files into DataFrames and add the new column
-# for file_path in csv_file_paths:
-#     df = pd.read_csv(file_path)
-#     df['final_model_name'] = df['model_name'].apply(determine_final_model_name)
-    
-#     # Save the modified DataFrame to a new CSV file
-#     output_file_path = os.path.join(directory_path, 'modified_' + os.path.basename(file_path))
-#     df.to_csv(output_file_path, index=False)
-#     print(f'Modified CSV file saved to: {output_file_path}')
+# # Split the Model column into Annotated samples and Model name
+# # Split the Model column into Annotated samples and Model name
 
+# print(training_times_df)
+# training_times_df['Annotated samples'] = training_times_df['Model'].apply(lambda x: x.split('_')[0])
+# training_times_df['Model'] = training_times_df['Model'].apply(lambda x: x.split('_')[1])
 
-# import pandas as pd
-# import os
+# # Update the Model names
+# training_times_df['Model'] = training_times_df['Model'].apply(update_model_name)
 
-# # Define the path to the directory containing the CSV files
-# directory_path = '../output/head501'
+# # Convert Training Time to minutes, seconds, and milliseconds
+# training_times_df['Training Time (min:sec.ms)'] = training_times_df['Training Time'].apply(
+#     lambda x: f"{int(x // 60)}:{int(x % 60):02d}.{int((x * 1000) % 1000):03d}"
+# )
 
-# # Define the specific CSV files to open
-# csv_files = [
-#     'modified_flowering_determination_best_gan_models.csv',
-#     'modified_flowering_determination_benchmark_models.csv'
-# ]
-
-# # Construct the full file paths
-# csv_file_paths = [os.path.join(directory_path, file) for file in csv_files]
-
-# # Columns to subset
-# columns_to_subset = ['final_model_name', 'flowering_date_uav_estimate', 'sample_size_label', 'pred_test', 'y_test']
-
-# # Read the specific CSV files into DataFrames and subset the required columns
-# dataframes = [pd.read_csv(file)[columns_to_subset] for file in csv_file_paths]
-
-# # Concatenate the DataFrames into one
-# combined_df = pd.concat(dataframes, ignore_index=True)
-
-# print(combined_df.head())
-
-# # Define the path to save the combined CSV file
-# output_file_path = os.path.join(directory_path, 'combined_flowering_determination_models.csv')
-
-# # Save the combined DataFrame to a new CSV file
-# combined_df.to_csv(output_file_path, index=False)
-
-# print(f'Combined CSV file saved to: {output_file_path}')
-
-# import pandas as pd
-# import os
-
-# # Define the path to the combined CSV file
-# file_path = '../output/head501/combined_flowering_determination_models.csv'
-
-# # Read the CSV file into a DataFrame
-# df = pd.read_csv(file_path)
-
-# # Print unique values in the 'sample_size_label' column
-# unique_sample_size_labels = df['sample_size_label'].unique()
-# print('Unique sample_size_label values:', unique_sample_size_labels)
-
-
-# import pandas as pd
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# from sklearn.metrics import accuracy_score, roc_auc_score, f1_score, jaccard_score, precision_score, recall_score
-# import os
-
-# # Define the path to the input CSV file
-# file_path = '../output/head501/updated_combined_flowering_determination_models.csv'
-
-# # Read the CSV file into a DataFrame
-# df = pd.read_csv(file_path)
-
-# # Initialize a list to store the results
-# results = []
-
-# # Group by the specified columns
-# grouped = df.groupby(['final_model_name', 'sample_size_label1', 'flowering_date_uav_estimate'])
-
-# # Calculate metrics for each group
-# for name, group in grouped:
-#     y_true = group['y_test']
-#     y_pred = group['pred_test']
-    
-#     accuracy = accuracy_score(y_true, y_pred)
-#     roc_auc = roc_auc_score(y_true, y_pred) if len(y_true.unique()) > 1 else float('nan')  # Handle case with only one class
-#     f1 = f1_score(y_true, y_pred)
-#     jaccard = jaccard_score(y_true, y_pred)
-#     precision = precision_score(y_true, y_pred)
-#     recall = recall_score(y_true, y_pred)
-    
-#     results.append({
-#         'final_model_name': name[0],
-#         'sample_size_label1': name[1],
-#         'flowering_date_uav_estimate': name[2],
-#         'accuracy': accuracy,
-#         'roc_auc': roc_auc,
-#         'f1_score': f1,
-#         'jaccard_index': jaccard,
-#         'precision': precision,
-#         'recall': recall
-#     })
-
-# # Create a new DataFrame from the results
-# metrics_df = pd.DataFrame(results)
-
-# # Define the categories and order
-# categories = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
-
-# # Split the DataFrame by 'flowering_date_uav_estimate'
-# unique_dates = metrics_df['flowering_date_uav_estimate'].unique()
+# print(training_times_df)
 
 # # Define a custom palette with hexadecimal color codes
-# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B']
+# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
 
-# # Function to plot metrics
-# def plot_metrics(df, date):
-#     metrics = ['accuracy', 'roc_auc', 'f1_score', 'jaccard_index', 'precision', 'recall']
-#     n_metrics = len(metrics)
-    
-#     fig, axes = plt.subplots(3, 2, figsize=(28, 30))  # 3 rows, 2 columns, overall size 28x30
-#     sns.set(font_scale=1.9)
-#     sns.set_style("ticks")
-    
-#     for ax, col in zip(axes.flatten(), metrics):
-#         sns.barplot(data=df,
-#                     x='sample_size_label1',
-#                     y=col,
-#                     hue='final_model_name',
-#                     alpha=0.8,
-#                     linewidth=2,
-#                     palette=palette,
-#                     order=sorted(df['sample_size_label1'].unique()),
-#                     ax=ax)  # Order by sample_size_label1
-        
-#         ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
-#         ax.yaxis.set_ticks(np.arange(0, 1.1, 0.2))
-#         sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
-#         ax.set_xlabel("% Annotated samples")
-#         ax.set_ylim([0, 1])
-#         ax.set_title(f'{col} for Flowering Date UAV Estimate {date}')
-    
-#     plt.tight_layout()
-#     plt.savefig(os.path.join('../output/models_performance and figures/', f'metrics_flowering_date_{date}.png'), bbox_inches='tight')
-#     plt.close()
+# # Define the order of models
+# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50']
 
-# # Loop through each unique date and plot the metrics
-# for date in unique_dates:
-#     date_df = metrics_df[metrics_df['flowering_date_uav_estimate'] == date]
-#     date_df = date_df[date_df['final_model_name'].isin(categories)]
-#     date_df['final_model_name'] = pd.Categorical(date_df['final_model_name'], categories=categories)
-#     date_df = date_df.sort_values(by=['final_model_name', 'sample_size_label1'], ascending=[True, True])
-    
-#     plot_metrics(date_df, date)
+# # Create the bar plot
+# plt.figure(figsize=(14, 10))
+# sns.set_theme(style="whitegrid")
+# ax = sns.barplot(x='Annotated samples', y='Training Time', hue='Model', data=training_times_df, palette=palette, hue_order=model_order)
 
-# print('Plots saved successfully.')
+# # Add labels and title
+# ax.set_xlabel('% Annotated samples')
+# ax.set_ylabel('Training time (seconds)')
+# ax.set_title('Training Time by Model and Annotated Samples')
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import os
+# # Rotate x-axis labels for better readability
+# plt.xticks(rotation=45)
 
-# Ensure the output directory exists
-dir_fig = '../output/models_performance and figures'
-os.makedirs(dir_fig, exist_ok=True)
+# # # Add text annotations for detailed time format
+# # for p in ax.patches:
+# #     height = p.get_height()
+# #     if not pd.isna(height):
+# #         ax.text(
+# #             p.get_x() + p.get_width() / 2.,
+# #             height,
+# #             f'{int(height // 60)}:{int(height % 60):02d}.{int((height * 1000) % 1000):03d}',
+# #             ha='center'
+# #         )
 
-# Load the CSV files into DataFrames
-benchmark_df = pd.read_csv(os.path.join(dir_fig,'benchmark_models_metrics.csv'))
-best_gan_df = pd.read_csv(os.path.join(dir_fig,'best_gan_models_metrics.csv'))
+# # Move the legend and set its title
+# # Move the legend and set its title
+# legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
 
-# Define the columns to keep
-columns_to_keep = ['model_name', 'sample_size_label1', 'accuracy', 'precision', 'recall', 'f1']
+# # Adjust layout to avoid UserWarning
+# plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-# Subset the columns needed from each DataFrame
-benchmark_df = benchmark_df[columns_to_keep]
-best_gan_df = best_gan_df[columns_to_keep]
+# # # Show the plot
+# # plt.show()
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import os
 
-# Combine the DataFrames
-both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
+# # Ensure the output directory exists
+# dir_fig = '../output/predictions_09222024'
+# os.makedirs(dir_fig, exist_ok=True)
 
-# Define a custom palette with hexadecimal color codes
-palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B']
+# # Load the CSV files into DataFrames
+# training_times_benchmarks_df = pd.read_csv(os.path.join(dir_fig, 'training_times_benchmarks.csv'))
+# training_times_gan_df = pd.read_csv(os.path.join(dir_fig, 'training_times_gan.csv'))
 
-plt.figure(figsize=(14, 10))
-sns.set(font_scale=1.9)
-sns.set_style("ticks")
+# # Function to update model name based on conditions
+# def update_model_name(model_name):
+#     if 'TRANSF' in model_name:
+#         return 'ResNet-50'
+#     elif 'SMALLCNN' in model_name:
+#         return 'CNN'
+#     elif 'KNN' in model_name:
+#         return 'KNN'
+#     elif 'RF' in model_name:
+#         return 'RF'
+#     elif 'ESGAN' in model_name:
+#         return 'ESGAN'
+#     else:
+#         return 'Unknown'
 
-def plot_metrics(col):
-    plt.figure()
-    ax = sns.barplot(data=both,
-                     x='sample_size_label1',
-                     y=col,
-                     hue='model_name',
-                     alpha=0.8,
-                     linewidth=2,
-                     palette=palette)  # Use the custom palette
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
-    ax.yaxis.set_ticks(np.arange(0, 1.1, 0.2))
-    sns.move_legend(ax, "upper left", bbox_to_anchor=(1, 1))
-    ax.set_xlabel("% Annotated samples")
-    ax.set_ylim([0, 1])
-    plt.savefig(os.path.join(dir_fig, f'{col}_figures.png'), bbox_inches='tight')
+# # Process the benchmarks DataFrame
+# training_times_benchmarks_df['Annotated samples'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[0])
+# training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[1])
+# training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(update_model_name)
 
-for col in columns_to_keep[2:]:
-    plot_metrics(col)
+# # Process the GAN DataFrame
+# training_times_gan_df['Annotated samples'] = training_times_gan_df['Sample Size'].astype(str)
+# training_times_gan_df['Model'] = training_times_gan_df['model']
+
+# # Update the Model names in GAN DataFrame
+# training_times_gan_df['Model'] = training_times_gan_df['Model'].apply(update_model_name)
+
+# # Combine both DataFrames
+# combined_df = pd.concat([training_times_benchmarks_df, training_times_gan_df], ignore_index=True)
+
+# # Ensure 'Annotated samples' is treated as a categorical variable with a specific order
+# annotated_samples_order = sorted(combined_df['Annotated samples'].unique(), key=lambda x: int(x))
+# combined_df['Annotated samples'] = pd.Categorical(combined_df['Annotated samples'], categories=annotated_samples_order, ordered=True)
+
+# # Convert Training Time to minutes, seconds, and milliseconds
+# combined_df['Training Time (min:sec.ms)'] = combined_df['Training Time'].apply(
+#     lambda x: f"{int(x // 60)}:{int(x % 60):02d}.{int((x * 1000) % 1000):03d}"
+# )
+
+# # Define a custom palette with hexadecimal color codes
+# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
+
+# # Define the order of models
+# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
 
 
 
-#plt.show()
+# # Create the bar plot
+# plt.figure(figsize=(16, 10))
+
+# sns.set_theme(style="whitegrid",font_scale=2.0)
+# ax = sns.barplot(x='Annotated samples', y='Training Time', hue='Model', data=combined_df, palette=palette, hue_order=model_order)
+# # Set the font size globally
+
+# # Add labels and title
+# ax.set_xlabel('% Annotated samples')
+# ax.set_ylabel('Training time (seconds)')
+# ax.set_title('Training Time by Model and Annotated Samples')
+
+# # Rotate x-axis labels for better readability
+# plt.xticks(rotation=45)
+
+# # Move the legend and set its title
+# legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+
+# # Adjust layout to avoid UserWarning
+# plt.tight_layout(rect=[0, 0, 0.85, 1])
+
+# # Save the plot to the specified directory
+# plt.savefig(os.path.join(dir_fig, 'training_time_by_model_and_annotated_samples.png'), bbox_inches='tight')
+
+# # Show the plot
+# plt.show()

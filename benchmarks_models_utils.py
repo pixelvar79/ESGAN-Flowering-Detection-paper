@@ -1,18 +1,17 @@
+import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from numpy.random import randint
-import seaborn as sns, matplotlib.pyplot as plt
 
 from sklearn.metrics import accuracy_score, roc_curve, auc, roc_auc_score, f1_score, jaccard_score, precision_score, recall_score
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from skimage.transform import resize as skimage_resize
-import os
 from tensorflow.keras.applications.resnet50 import preprocess_input
 
 
+# Function to calculate tabular statistics
 def calculate_tabular_stats(X):
     print('generating tabular statistics...')
     statslist = []
@@ -57,6 +56,7 @@ def calculate_tabular_stats(X):
 
     return stats_df
 
+# Function to split tabular data into training, validation, and testing sets
 def subset_split(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2):
     print(f'generating split of tabular data {nsample}...')
     x_train1 = pd.DataFrame()
@@ -90,7 +90,7 @@ def subset_split(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2):
     
     return x_train1, x_val, y_train1, y_val, x_test, y_test, index_train, index_test
 
-
+#  Function to split image data into training, validation, and testing sets
 def subset_split1(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2, resize_images=False):
     print(f'generating split of numpyarray image data {nsample}...')
     # Encode the labels
@@ -137,6 +137,7 @@ def subset_split1(x_var, y_var, nsample, RANDOM_STATE=123, n_classes=2, resize_i
     
     return x_train1, x_val, y_train1, y_val, x_test, y_test, index_train, index_test
 
+# Function to store fpr and tpr predictions
 def store_roc_results(model, nsample, iteration, x_test, y_test, outdir):
 
     print(f'generating ROC results for {model} {nsample}...')
@@ -169,18 +170,19 @@ def store_roc_results(model, nsample, iteration, x_test, y_test, outdir):
     
 # Function to update model name based on conditions
 def update_model_name(model_name):
-    if 'transf' in model_name:
+    if 'TRANSF' in model_name:
         return 'ResNet-50'
-    elif 'smallcnn' in model_name:
+    elif 'SMALLCNN' in model_name:
         return 'CNN'
     elif 'KNN' in model_name:
         return 'KNN'
-    elif 'rf' in model_name:
+    elif 'RF' in model_name:
         return 'RF'
     else:
         return 'Unknown'
 
-def save_predictions(predictions,  concdateID, floweringdate, outdir):
+# Function to save predictions
+def save_predictions(predictions,  concdateID1, floweringdate1, grouping1):
     
     results = []
     
@@ -215,8 +217,9 @@ def save_predictions(predictions,  concdateID, floweringdate, outdir):
         y_test = data['y_test']
         iteration_n = data['iteration']# Assuming y_test is available in the data dictionary
         for i, idx in enumerate(indices):
-            concdate = concdateID.iloc[idx].item()
-            flowering_date = floweringdate.iloc[idx].item()
+            concdate = concdateID1.iloc[idx].item()
+            flowering_date = floweringdate1.iloc[idx].item()
+            group = grouping1.iloc[idx].item()
             flowering_date_uav_estimate = concdateID_to_flowering_date.get(concdate, None)
             sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
             
@@ -231,19 +234,22 @@ def save_predictions(predictions,  concdateID, floweringdate, outdir):
                 'concdateID': concdate,
                 'flowering_date': flowering_date,
                 'flowering_date_uav_estimate': flowering_date_uav_estimate,
+                'grouping': group,
                 'iteration_n': iteration_n
             })
 
     # Convert results to DataFrame
     results_df = pd.DataFrame(results)
-
-    # Save the results DataFrame to a CSV file
-    results_df.to_csv(os.path.join(outdir, 'benchmarks_models_predictions_and_y_test.csv'), index=False)
-
-    print('Predictions and y_test values saved successfully.')
     
-def summary_metrics(predictions, outdir):
-    
+    return results_df
+
+    # # Save the results DataFrame to a CSV file
+    # results_df.to_csv(os.path.join(outdir, 'benchmarks_models_predictions_and_y_test.csv'), index=False)
+
+    # print('Predictions and y_test values saved successfully.')
+
+# Function to summarize metrics
+def summary_metrics(predictions):
     # Sample size label mapping
     sample_size_mapping = {
         30: 1,
@@ -290,13 +296,7 @@ def summary_metrics(predictions, outdir):
 
     # Convert metrics to DataFrame
     metrics_df = pd.DataFrame(metrics)
+    
+    return metrics_df
 
-    # Print the results DataFrame
-    print("Results DataFrame:")
-    print(metrics_df)
-
-    # Save the results DataFrame to a CSV file
-    metrics_df.to_csv(os.path.join(outdir, 'benchmarks_models_metrics.csv'), index=False)
-
-    print('CSV saved successfully.')
 

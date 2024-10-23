@@ -4,19 +4,15 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from pathlib import Path
 from directories import dir_img, dir_img1, dir_gt, dir_out
-from data_loader import load_dataset1, load_dataset, load_datasett
+from data_loader import load_dataset1, load_dataset, load_datasett, load_datasettt
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-import pandas as pd
 import os
 import tensorflow as tf
-import glob
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from pathlib import Path
-from directories import dir_img, dir_img1, dir_gt, dir_out
 
 # Load dataset
-X, y, floweringdate, concdateID = load_datasett(dir_img, dir_gt)
+
+X, y, floweringdate, concdateID, grouping = load_datasettt(dir_img1, dir_gt)
 
 # Function to load and preprocess real samples
 def load_real_samples(X111, y111):
@@ -32,6 +28,7 @@ def load_real_samples(X111, y111):
     x_train, x_test, y_train, y_test, index_train, index_test = train_test_split(
         X1111, y1111, indices, train_size=0.8, random_state=123
     )
+    
     return [x_train, x_test, y_train, y_test, index_train, index_test]
 
 # Directory containing GAN models
@@ -58,7 +55,6 @@ for model_filename in model_filenames:
     model_name = os.path.basename(model_path)
     model = tf.keras.models.load_model(model_path)
 
-    
     # Load and preprocess the data
     x_train, x_test, y_train, y_test, index_train, index_test = load_real_samples(X, y)
     
@@ -90,8 +86,8 @@ results = []
 concdateID_to_flowering_date = {
     'M1111': 247,
     'M0111': 262,
-    'M0011': 279
-    #'M0001': 296
+    'M0011': 279,
+    'M0001': 296
 }
 
 # Sample size label mapping
@@ -110,15 +106,18 @@ sample_size_mapping = {
 for model_name, data in predictions.items():
     parts = model_name.split('_')
     sample_size_label = int(parts[-3])
+    iteration = int(parts[-2])
     updated_model_name = 'ESGAN'
     
     indices = data['index_test'].values  # Corrected to access the values directly
     y_pred = data['y_pred']
     y_test = data['y_test']
-    iteration_n = data['iteration']# Assuming y_test is available in the data dictionary
+    iteration_n = iteration
+    
     for i, idx in enumerate(indices):
         concdate = concdateID.iloc[idx].item()
         flowering_date = floweringdate.iloc[idx].item()
+        group = grouping.iloc[idx].item()
         flowering_date_uav_estimate = concdateID_to_flowering_date.get(concdate, None)
         sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
         
@@ -133,6 +132,7 @@ for model_name, data in predictions.items():
             'concdateID': concdate,
             'flowering_date': flowering_date,
             'flowering_date_uav_estimate': flowering_date_uav_estimate,
+            'grouping': group,
             'iteration_n': iteration_n
         })
 
@@ -148,35 +148,34 @@ print('Predictions and y_test values saved successfully.')
 # Extract models' labels from filename and calculate metrics
 metrics = []
 for model_name, data in predictions.items():
-        # Extract sample_size_label and updated model_name
-        parts = model_name_original.split('_')
-        sample_size_label = int(parts[0])
-        updated_model_name = 'ESGAN'
-        
-        indices = data['index_test']
-        y_pred = data['y_pred']
-        y_test = data['y_test']
-        iteration_n = data['iteration']
-        
-        accuracy = accuracy_score(y_test, y_pred)
-        precision = precision_score(y_test, y_pred, average='weighted')
-        recall = recall_score(y_test, y_pred, average='weighted')
-        f1 = f1_score(y_test, y_pred, average='weighted')
-        
-        sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
-        
-        metrics.append({
-            'model_name': 'ESGAN'
-            'model_name_original': 'ESGAN',
-            'sample_size_label': sample_size_label,
-            'sample_size_label1': sample_size_label1,
-            'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
-            'f1': f1,
-            'iteration_n': iteration_n
-        
-        })
+    # Extract sample_size_label and updated model_name
+    parts = model_name.split('_')
+    sample_size_label = int(parts[-3])
+    iteration = int(parts[-2])
+    updated_model_name = 'ESGAN'
+    
+    indices = data['index_test']
+    y_pred = data['y_pred']
+    y_test = data['y_test']
+    iteration_n = iteration
+    
+    accuracy = accuracy_score(y_test, y_pred)
+    precision = precision_score(y_test, y_pred, average='weighted')
+    recall = recall_score(y_test, y_pred, average='weighted')
+    f1 = f1_score(y_test, y_pred, average='weighted')
+    sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
+    
+    metrics.append({
+        'model_name': 'ESGAN',
+        'model_name_original': 'ESGAN',
+        'sample_size_label': sample_size_label,
+        'sample_size_label1': sample_size_label1,
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1,
+        'iteration_n': iteration_n
+    })
 
 # Convert metrics to DataFrame
 metrics_df = pd.DataFrame(metrics)
@@ -187,6 +186,4 @@ print(metrics_df)
 # Save the results DataFrame to a CSV file
 metrics_df.to_csv(os.path.join(dir_out, 'gan_models_metrics.csv'), index=False)
 
-# # Find the best models for each group of sample_size_label
-
-
+print('Metrics saved successfully.')

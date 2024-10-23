@@ -1,0 +1,18 @@
+1) benchmarks_models_predictions_and_y_test.csv, benchmarks_models_metrics.csv <- train_evaluate_benchmark_models.py 
+    <-  benchmark_models_utils.py
+        data_loader
+        directories.py, models.py
+
+2) c_model_%04d_ESGAN_{sample1}_{j}.h5 <- train_gan.py 
+    <-  gan_utils.py
+        data_loader
+        directories.py, models.py
+
+    identify_best_gan_models.py
+
+    gan_models_predictions_and_y_test.csv, gan_models_metrics.csv <- evaluation_gan_performance.py 
+
+3) gan_models_predictions_and_y_test.csv, gan_models_metrics.csv, 
+    benchmarks_models_predictions_and_y_test.csv, benchmarks_models_metrics.csv 
+    <- plots_flowering.py
+

@@ -13,6 +13,9 @@ from data_loader import load_dataset
 from models import define_discriminator, define_generator, define_gan
 from gan_utils import load_real_samples, select_supervised_samples, generate_real_samples, generate_real_samples1, generate_latent_points, generate_fake_samples
 
+import time
+import pandas as pd
+
 try:
     # Ensure TensorFlow uses the GPU
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -29,7 +32,9 @@ try:
     check_gpu()
 
     #  train the models
-    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=50):
+    def train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim, n_epochs=10):
+        # Simulate training time
+        time.sleep(0.1)  # Replace with actual training code
         
         print(n_batchs)
         X_sup, y_sup = select_supervised_samples(dataset, sample1)
@@ -132,20 +137,43 @@ try:
     percents = (30,60,100,300,900,1800,2400,3000) 
     
     # batch size for training data should be assigned according since it's taken from the amount of training labeled data available 
-    batchs = (10,16,30,40,50,50,70,70) 
-
+    #batchs = (10,16,30,40,50,50,70,70) 
+    batchs = (10,10,10,10,10,10,10,10) 
+    results = []
+    
     # training the gan model for each percentage of labeled data
-    for j in range(5):
+    for j in range(1):
         for sample1, n_batchs in zip(percents, batchs):
             
             dataset = load_real_samples(X, y)
             
             print(f'Training on iteration {j}, sample {sample1}, and batch {n_batchs}')
             
+            start_time = time.time()
+            
             try:
                 train_gan(g_model, d_model, c_model, gan_model, dataset, latent_dim)
             except KeyboardInterrupt:
                 print("Training interrupted. Exiting gracefully...")
+                
+            end_time = time.time()
+            training_time = end_time - start_time
+            
+            # Store the results
+            results.append({
+                'model': f'ESGAN_{sample1}_{j}',
+                'Sample Size': sample1,
+                'Batch Size': n_batchs,
+                'Training Time': training_time
+            })
+
+        # Convert the results to a DataFrame
+        results_df = pd.DataFrame(results)
+
+        # Save the results to a CSV file
+        results_df.to_csv('training_times.csv', index=False)
+
+        print("Training times saved to training_times.csv")
 
 except KeyboardInterrupt:
     print("Training interrupted. Exiting gracefully...")

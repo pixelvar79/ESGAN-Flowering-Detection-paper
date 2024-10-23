@@ -25,8 +25,6 @@ Build local Conda virtual environment and dependencies
 ```
 This was the last version of Tensorflow in native Windows that supports GPU, otherwise it should be implemented in WSL Linux node or native Linux OS.
 
-# My Project
-
 This is a description on how py files are strcutured for implementing the manuscript analysis.
 
 ## Screenshot

@@ -27,7 +27,7 @@ def rescale(arr):
 
 
 def load_datasett(img_dir, gt_dir):
-    csv_file = Path(gt_dir) / 'MSA_GT.csv'
+    csv_file = Path(gt_dir) / 'ground_truth.csv'
     # Ensure 'concdate' is loaded as text
     df = pd.read_csv(csv_file, dtype={'concdate': str})
     

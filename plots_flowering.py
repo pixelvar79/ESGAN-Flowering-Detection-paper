@@ -212,124 +212,124 @@
 # for sample_size_label in sample_size_labels:
 #     plot_pred_test(sample_size_label)
 
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-import numpy as np
-import os
+# import pandas as pd
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import numpy as np
+# import os
 
-# Ensure the output directory exists
-dir_fig = '../output/predictions_09222024'
-os.makedirs(dir_fig, exist_ok=True)
+# # Ensure the output directory exists
+# dir_fig = '../output/predictions_09222024'
+# os.makedirs(dir_fig, exist_ok=True)
 
-# Load the CSV files into DataFrames
-benchmark_df = pd.read_csv(os.path.join(dir_fig, 'benchmarks_models_predictions_and_y_test.csv'))
-best_gan_df = pd.read_csv(os.path.join(dir_fig, 'gan_models_predictions_and_y_test.csv'))
-benchmark_df = benchmark_df[benchmark_df['iteration_n'] == 0]
+# # Load the CSV files into DataFrames
+# benchmark_df = pd.read_csv(os.path.join(dir_fig, 'benchmarks_models_predictions_and_y_test.csv'))
+# best_gan_df = pd.read_csv(os.path.join(dir_fig, 'gan_models_predictions_and_y_test.csv'))
+# benchmark_df = benchmark_df[benchmark_df['iteration_n'] == 0]
 
-# Define the columns to keep
-columns_to_keep = ['model_name', 'sample_size_label1', 'pred_test', 'y_test', 'grouping']
+# # Define the columns to keep
+# columns_to_keep = ['model_name', 'sample_size_label1', 'pred_test', 'y_test', 'grouping']
 
-# Subset the columns needed from each DataFrame
-benchmark_df = benchmark_df[columns_to_keep]
-best_gan_df = best_gan_df[columns_to_keep]
+# # Subset the columns needed from each DataFrame
+# benchmark_df = benchmark_df[columns_to_keep]
+# best_gan_df = best_gan_df[columns_to_keep]
 
-# Concatenate the DataFrames
-both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
+# # Concatenate the DataFrames
+# both = pd.concat([benchmark_df, best_gan_df], ignore_index=True)
 
-# Ensure 'grouping' is treated as numerical values
-both['grouping'] = pd.to_numeric(both['grouping'], errors='coerce')
+# # Ensure 'grouping' is treated as numerical values
+# both['grouping'] = pd.to_numeric(both['grouping'], errors='coerce')
 
-print(both)
+# print(both)
 
-# Exclude rows where 'grouping' is 296
-both = both[both['grouping'] != 296]
+# # Exclude rows where 'grouping' is 296
+# both = both[both['grouping'] != 296]
 
-# Define a custom palette with hexadecimal color codes
-palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
+# # Define a custom palette with hexadecimal color codes
+# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
 
-# Define the order of models
-model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
+# # Define the order of models
+# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
 
-# Define dash patterns for all models
-dashes = {
-    'KNN': '',
-    'RF': '',
-    'CNN': '',
-    'ResNet-50': '',
-    'ESGAN': '',
-    'Ground-Truth': (5, 2)  # Set Ground-Truth line to be dashed
-}
+# # Define dash patterns for all models
+# dashes = {
+#     'KNN': '',
+#     'RF': '',
+#     'CNN': '',
+#     'ResNet-50': '',
+#     'ESGAN': '',
+#     'Ground-Truth': (5, 2)  # Set Ground-Truth line to be dashed
+# }
 
-# List of sample sizes
-l = [32, 64, 94, 314, 941, 1884, 2509, 3137]
+# # List of sample sizes
+# l = [32, 64, 94, 314, 941, 1884, 2509, 3137]
 
-# Function to plot line plots for pred_test
-def plot_pred_test(sample_size_label, n_value):
-    data = both[both['sample_size_label1'] == sample_size_label]
+# # Function to plot line plots for pred_test
+# def plot_pred_test(sample_size_label, n_value):
+#     data = both[both['sample_size_label1'] == sample_size_label]
     
-    # Count the occurrences of the event 1 in pred_test
-    event_counts = data[data['pred_test'] == 1].groupby(['grouping', 'model_name']).size().reset_index(name='event_count')
+#     # Count the occurrences of the event 1 in pred_test
+#     event_counts = data[data['pred_test'] == 1].groupby(['grouping', 'model_name']).size().reset_index(name='event_count')
     
-    # Count the occurrences of the event 1 in y_test for a reference model (e.g., 'KNN')
-    reference_model = 'KNN'
-    ground_truth_counts = data[(data['model_name'] == reference_model) & (data['y_test'] == 1)].groupby('grouping').size().reset_index(name='event_count')
-    ground_truth_counts['model_name'] = 'Ground-Truth'
+#     # Count the occurrences of the event 1 in y_test for a reference model (e.g., 'KNN')
+#     reference_model = 'KNN'
+#     ground_truth_counts = data[(data['model_name'] == reference_model) & (data['y_test'] == 1)].groupby('grouping').size().reset_index(name='event_count')
+#     ground_truth_counts['model_name'] = 'Ground-Truth'
     
-    # Append ground-truth counts to event_counts
-    event_counts = pd.concat([event_counts, ground_truth_counts], ignore_index=True)
+#     # Append ground-truth counts to event_counts
+#     event_counts = pd.concat([event_counts, ground_truth_counts], ignore_index=True)
     
-    # Debugging: Print the shape and content of event_counts
-    print(f"Event counts for sample_size_label={sample_size_label}:")
-    print(event_counts.head())
-    print(f"Shape of event_counts: {event_counts.shape}")
+#     # Debugging: Print the shape and content of event_counts
+#     print(f"Event counts for sample_size_label={sample_size_label}:")
+#     print(event_counts.head())
+#     print(f"Shape of event_counts: {event_counts.shape}")
     
-    # Skip plotting if event_counts is empty
-    if event_counts.empty:
-        print(f"No data to plot for sample_size_label={sample_size_label}. Skipping.")
-        return
+#     # Skip plotting if event_counts is empty
+#     if event_counts.empty:
+#         print(f"No data to plot for sample_size_label={sample_size_label}. Skipping.")
+#         return
     
-    # Set plot settings
-    plt.figure(figsize=(16, 10))
-    sns.set_theme(font_scale=3.2)
-    sns.set_style("ticks")
+#     # Set plot settings
+#     plt.figure(figsize=(16, 10))
+#     sns.set_theme(font_scale=3.2)
+#     sns.set_style("ticks")
     
-    ax = sns.lineplot(data=event_counts,
-                      x='grouping',
-                      y='event_count',
-                      hue='model_name',
-                      hue_order=model_order + ['Ground-Truth'],  # Include Ground-Truth in the order
-                      palette=palette,  # Use the updated palette
-                      markers=True,  # Add markers to the lines
-                      style='model_name',  # Different styles for different models
-                      dashes=dashes,  # Set dash patterns for all models
-                      linewidth=3.5,  # Increase line thickness
-                      markersize=20)  # Increase marker size
+#     ax = sns.lineplot(data=event_counts,
+#                       x='grouping',
+#                       y='event_count',
+#                       hue='model_name',
+#                       hue_order=model_order + ['Ground-Truth'],  # Include Ground-Truth in the order
+#                       palette=palette,  # Use the updated palette
+#                       markers=True,  # Add markers to the lines
+#                       style='model_name',  # Different styles for different models
+#                       dashes=dashes,  # Set dash patterns for all models
+#                       linewidth=3.5,  # Increase line thickness
+#                       markersize=20)  # Increase marker size
     
-    # Set x-axis ticks from 240 to 300, separated by 5 days
-    x_ticks = np.arange(245, 280, 5)
-    plt.xticks(x_ticks)
+#     # Set x-axis ticks from 240 to 300, separated by 5 days
+#     x_ticks = np.arange(245, 280, 5)
+#     plt.xticks(x_ticks)
     
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
+#     ax.set_xticklabels(ax.get_xticklabels(), rotation=60)
     
-    # Move the legend and set its title
-    legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+#     # Move the legend and set its title
+#     legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
     
-    ax.set_xlabel("Flowering time (Julian Dates)")
-    ax.set_ylabel("N Flowering events detected")  # Set the y-axis label
+#     ax.set_xlabel("Flowering time (Julian Dates)")
+#     ax.set_ylabel("N Flowering events detected")  # Set the y-axis label
     
-    # Add text annotations
-    plt.text(0.8, 0.25, f'{sample_size_label}%', fontsize=40, transform=ax.transAxes)
-    plt.text(0.8, 0.20, f'(n={n_value})', fontsize=30, transform=ax.transAxes)
+#     # Add text annotations
+#     plt.text(0.8, 0.25, f'{sample_size_label}%', fontsize=40, transform=ax.transAxes)
+#     plt.text(0.8, 0.20, f'(n={n_value})', fontsize=30, transform=ax.transAxes)
     
-    plt.tight_layout()  # Adjust the layout to fit elements properly
-    plt.savefig(os.path.join(dir_fig, f'pred_test_count_{sample_size_label}.png'), bbox_inches='tight')
-    plt.close()
+#     plt.tight_layout()  # Adjust the layout to fit elements properly
+#     plt.savefig(os.path.join(dir_fig, f'pred_test_count_{sample_size_label}.png'), bbox_inches='tight')
+#     plt.close()
 
-# Generate plots for each sample size label
-sample_size_labels = both['sample_size_label1'].unique()
-for sample_size_label, n_value in zip(sample_size_labels, l):
-    plot_pred_test(sample_size_label, n_value)
+# # Generate plots for each sample size label
+# sample_size_labels = both['sample_size_label1'].unique()
+# for sample_size_label, n_value in zip(sample_size_labels, l):
+#     plot_pred_test(sample_size_label, n_value)
 
 # import pandas as pd
 # import matplotlib.pyplot as plt
@@ -408,92 +408,107 @@ for sample_size_label, n_value in zip(sample_size_labels, l):
 
 # # Adjust layout to avoid UserWarning
 # plt.tight_layout(rect=[0, 0, 0.85, 1])
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
 
-# # # Show the plot
-# # plt.show()
-# import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# import os
+# Ensure the output directory exists
+dir_fig = '../output/predictions_09222024'
+os.makedirs(dir_fig, exist_ok=True)
 
-# # Ensure the output directory exists
-# dir_fig = '../output/predictions_09222024'
-# os.makedirs(dir_fig, exist_ok=True)
+# Load the CSV files into DataFrames
+training_times_benchmarks_df = pd.read_csv(os.path.join(dir_fig, 'training_times_benchmarks.csv'))
+training_times_gan_df = pd.read_csv(os.path.join(dir_fig, 'training_times_gan.csv'))
 
-# # Load the CSV files into DataFrames
-# training_times_benchmarks_df = pd.read_csv(os.path.join(dir_fig, 'training_times_benchmarks.csv'))
-# training_times_gan_df = pd.read_csv(os.path.join(dir_fig, 'training_times_gan.csv'))
+# Function to update model name based on conditions
+def update_model_name(model_name):
+    if 'TRANSF' in model_name:
+        return 'ResNet-50'
+    elif 'SMALLCNN' in model_name:
+        return 'CNN'
+    elif 'KNN' in model_name:
+        return 'KNN'
+    elif 'RF' in model_name:
+        return 'RF'
+    elif 'ESGAN' in model_name:
+        return 'ESGAN'
+    else:
+        return 'Unknown'
 
-# # Function to update model name based on conditions
-# def update_model_name(model_name):
-#     if 'TRANSF' in model_name:
-#         return 'ResNet-50'
-#     elif 'SMALLCNN' in model_name:
-#         return 'CNN'
-#     elif 'KNN' in model_name:
-#         return 'KNN'
-#     elif 'RF' in model_name:
-#         return 'RF'
-#     elif 'ESGAN' in model_name:
-#         return 'ESGAN'
-#     else:
-#         return 'Unknown'
+# Process the benchmarks DataFrame
+training_times_benchmarks_df['Annotated samples'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[0])
+training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[1])
+training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(update_model_name)
 
-# # Process the benchmarks DataFrame
-# training_times_benchmarks_df['Annotated samples'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[0])
-# training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(lambda x: x.split('_')[1])
-# training_times_benchmarks_df['Model'] = training_times_benchmarks_df['Model'].apply(update_model_name)
+# Create a mapping dictionary for sample sizes to percentages
+sample_size_to_percent = {
+    '30': '1',
+    '60': '2',
+    '100': '3',
+    '300': '10',
+    '900': '30',
+    '1800': '60',
+    '2400': '80',
+    '3000': '100'
+}
 
-# # Process the GAN DataFrame
-# training_times_gan_df['Annotated samples'] = training_times_gan_df['Sample Size'].astype(str)
-# training_times_gan_df['Model'] = training_times_gan_df['model']
+# Generate the Percent Annotated samples column for benchmarks DataFrame
+training_times_benchmarks_df['Percent Annotated samples'] = training_times_benchmarks_df['Annotated samples'].map(sample_size_to_percent)
 
-# # Update the Model names in GAN DataFrame
-# training_times_gan_df['Model'] = training_times_gan_df['Model'].apply(update_model_name)
+# Process the GAN DataFrame
+training_times_gan_df['Annotated samples'] = training_times_gan_df['Sample Size'].astype(str)
+training_times_gan_df['Model'] = training_times_gan_df['model']
 
-# # Combine both DataFrames
-# combined_df = pd.concat([training_times_benchmarks_df, training_times_gan_df], ignore_index=True)
+# Generate the Percent Annotated samples column for GAN DataFrame
+training_times_gan_df['Percent Annotated samples'] = training_times_gan_df['Annotated samples'].map(sample_size_to_percent)
 
-# # Ensure 'Annotated samples' is treated as a categorical variable with a specific order
-# annotated_samples_order = sorted(combined_df['Annotated samples'].unique(), key=lambda x: int(x))
-# combined_df['Annotated samples'] = pd.Categorical(combined_df['Annotated samples'], categories=annotated_samples_order, ordered=True)
+# Update the Model names in GAN DataFrame
+training_times_gan_df['Model'] = training_times_gan_df['Model'].apply(update_model_name)
 
-# # Convert Training Time to minutes, seconds, and milliseconds
-# combined_df['Training Time (min:sec.ms)'] = combined_df['Training Time'].apply(
-#     lambda x: f"{int(x // 60)}:{int(x % 60):02d}.{int((x * 1000) % 1000):03d}"
-# )
+# Combine both DataFrames
+combined_df = pd.concat([training_times_benchmarks_df, training_times_gan_df], ignore_index=True)
 
-# # Define a custom palette with hexadecimal color codes
-# palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
+# Ensure 'Percent Annotated samples' is treated as a categorical variable with a specific order
+percent_annotated_samples_order = ['1', '2', '3', '10', '30', '60', '80', '100']
+combined_df['Percent Annotated samples'] = pd.Categorical(combined_df['Percent Annotated samples'], categories=percent_annotated_samples_order, ordered=True)
 
-# # Define the order of models
-# model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
+# Convert Training Time to minutes, seconds, and milliseconds
+combined_df['Training Time (min:sec.ms)'] = combined_df['Training Time'].apply(
+    lambda x: f"{int(x // 60)}:{int(x % 60):02d}.{int((x * 1000) % 1000):03d}"
+)
 
+# Define a custom palette with hexadecimal color codes
+palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B', '#000000']
 
+# Define the order of models
+model_order = ['KNN', 'RF', 'CNN', 'ResNet-50', 'ESGAN']
 
-# # Create the bar plot
-# plt.figure(figsize=(16, 10))
+# Set the font size globally
+plt.rcParams.update({'font.size': 2.9})
 
-# sns.set_theme(style="whitegrid",font_scale=2.0)
-# ax = sns.barplot(x='Annotated samples', y='Training Time', hue='Model', data=combined_df, palette=palette, hue_order=model_order)
-# # Set the font size globally
+# Create the bar plot
+plt.figure(figsize=(16, 10))
 
-# # Add labels and title
-# ax.set_xlabel('% Annotated samples')
-# ax.set_ylabel('Training time (seconds)')
-# ax.set_title('Training Time by Model and Annotated Samples')
+sns.set_theme(style="whitegrid", font_scale=2.0)
+ax = sns.barplot(x='Percent Annotated samples', y='Training Time', hue='Model', data=combined_df, palette=palette, hue_order=model_order)
 
-# # Rotate x-axis labels for better readability
-# plt.xticks(rotation=45)
+# Add labels and title
+ax.set_xlabel('% Annotated samples')
+ax.set_ylabel('Training time (seconds)')
+ax.set_title('Training Time by Model and Annotated Samples')
 
-# # Move the legend and set its title
-# legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
+# Rotate x-axis labels for better readability
+plt.xticks(rotation=45)
 
-# # Adjust layout to avoid UserWarning
-# plt.tight_layout(rect=[0, 0, 0.85, 1])
+# Move the legend and set its title
+legend = ax.legend(loc='upper left', bbox_to_anchor=(1, 1), title='Models')
 
-# # Save the plot to the specified directory
-# plt.savefig(os.path.join(dir_fig, 'training_time_by_model_and_annotated_samples.png'), bbox_inches='tight')
+# Adjust layout to avoid UserWarning
+plt.tight_layout(rect=[0, 0, 0.85, 1])
 
-# # Show the plot
-# plt.show()
+# Save the plot to the specified directory
+plt.savefig(os.path.join(dir_fig, 'training_time_by_model_and_annotated_samples1.png'), bbox_inches='tight')
+
+# Show the plot
+plt.show()

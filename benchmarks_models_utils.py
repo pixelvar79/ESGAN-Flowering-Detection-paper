@@ -182,7 +182,7 @@ def update_model_name(model_name):
         return 'Unknown'
 
 # Function to save predictions
-def save_predictions(predictions,  concdateID1, floweringdate1, grouping1):
+def save_predictions(predictions):
     
     results = []
     
@@ -191,7 +191,7 @@ def save_predictions(predictions,  concdateID1, floweringdate1, grouping1):
         'M1111': 247,
         'M0111': 262,
         'M0011': 279
-        #'M0001': 296
+       
     }
 
     # Sample size label mapping
@@ -217,9 +217,9 @@ def save_predictions(predictions,  concdateID1, floweringdate1, grouping1):
         y_test = data['y_test']
         iteration_n = data['iteration']# Assuming y_test is available in the data dictionary
         for i, idx in enumerate(indices):
-            concdate = concdateID1.iloc[idx].item()
-            flowering_date = floweringdate1.iloc[idx].item()
-            group = grouping1.iloc[idx].item()
+            # concdate = concdateID1.iloc[idx].item()
+            # flowering_date = floweringdate1.iloc[idx].item()
+            # group = grouping1.iloc[idx].item()
             flowering_date_uav_estimate = concdateID_to_flowering_date.get(concdate, None)
             sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
             
@@ -231,10 +231,8 @@ def save_predictions(predictions,  concdateID1, floweringdate1, grouping1):
                 'sample_size_label': sample_size_label,
                 'sample_size_label1': sample_size_label1,
                 'index_test': idx,
-                'concdateID': concdate,
-                'flowering_date': flowering_date,
                 'flowering_date_uav_estimate': flowering_date_uav_estimate,
-                'grouping': group,
+                # 'grouping': group,
                 'iteration_n': iteration_n
             })
 
@@ -287,8 +285,6 @@ def summary_metrics(predictions):
             'sample_size_label': sample_size_label,
             'sample_size_label1': sample_size_label1,
             'accuracy': accuracy,
-            'precision': precision,
-            'recall': recall,
             'f1': f1,
             'iteration_n': iteration_n
         

@@ -161,7 +161,7 @@ def train_knn(x_train1, y_train1, nsample, outdir, iter):
 
 
 ## PARAMETERS FOR TRANSF LEARNING AND SMALLCNN MODELS
-EPOCHS = 200
+EPOCHS = 500
 SIZE = 16
 MODE = 'max'
 METRIC_VAR = 'val_accuracy'

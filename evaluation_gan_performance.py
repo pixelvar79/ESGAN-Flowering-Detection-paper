@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from pathlib import Path
 from directories import dir_img, dir_img1, dir_gt, dir_out
-from data_loader import load_dataset1, load_dataset, load_datasett, load_datasettt
+from data_loader import load_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import os
@@ -12,7 +12,7 @@ import tensorflow as tf
 
 # Load dataset
 
-X, y, floweringdate, concdateID, grouping = load_datasettt(dir_img1, dir_gt)
+X, y = load_dataset(dir_img1, dir_gt)
 
 # Function to load and preprocess real samples
 def load_real_samples(X111, y111):
@@ -82,13 +82,6 @@ for model_filename in model_filenames:
 # Initialize results list
 results = []
 
-# Mapping for concdateID to flowering_date_uav_estimate
-concdateID_to_flowering_date = {
-    'M1111': 247,
-    'M0111': 262,
-    'M0011': 279,
-    'M0001': 296
-}
 
 # Sample size label mapping
 sample_size_mapping = {
@@ -115,10 +108,6 @@ for model_name, data in predictions.items():
     iteration_n = iteration
     
     for i, idx in enumerate(indices):
-        concdate = concdateID.iloc[idx].item()
-        flowering_date = floweringdate.iloc[idx].item()
-        group = grouping.iloc[idx].item()
-        flowering_date_uav_estimate = concdateID_to_flowering_date.get(concdate, None)
         sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
         
         results.append({
@@ -129,10 +118,6 @@ for model_name, data in predictions.items():
             'sample_size_label': sample_size_label,
             'sample_size_label1': sample_size_label1,
             'index_test': idx,
-            'concdateID': concdate,
-            'flowering_date': flowering_date,
-            'flowering_date_uav_estimate': flowering_date_uav_estimate,
-            'grouping': group,
             'iteration_n': iteration_n
         })
 
@@ -141,7 +126,7 @@ results_df = pd.DataFrame(results)
 print(results_df)
 
 # Save the results DataFrame to a CSV file
-results_df.to_csv(os.path.join(dir_out, 'gan_models_predictions_and_y_test.csv'), index=False)
+# results_df.to_csv(os.path.join(dir_out, 'gan_models_predictions_and_y_test.csv'), index=False)
 
 print('Predictions and y_test values saved successfully.')
 
@@ -171,8 +156,6 @@ for model_name, data in predictions.items():
         'sample_size_label': sample_size_label,
         'sample_size_label1': sample_size_label1,
         'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
         'f1': f1,
         'iteration_n': iteration_n
     })
@@ -184,6 +167,6 @@ metrics_df = pd.DataFrame(metrics)
 print(metrics_df)
 
 # Save the results DataFrame to a CSV file
-metrics_df.to_csv(os.path.join(dir_out, 'gan_models_metrics.csv'), index=False)
+metrics_df.to_csv(os.path.join(dir_out, 'esgan_models_metrics.csv'), index=False)
 
 print('Metrics saved successfully.')

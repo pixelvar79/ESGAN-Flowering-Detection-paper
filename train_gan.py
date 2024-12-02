@@ -107,7 +107,7 @@ try:
         c_model.save(filename3)
         print('>Saved: %s' % (filename3))
 
-    def save_plot(examples, epoch, n=10):
+    def save_plot(examples, epoch, n=1000):
         for i in range(n * n):
             plt.subplot(n, n, 1 + i)
             plt.axis('off')
@@ -133,16 +133,17 @@ try:
     
     #varying labeled samples and batch size for GAN training according to the paper def, testing data size is kept fixed for all percentages
     
-    # 30= 1%, 60=2%, 100=3%, 300=10%, 900=30%, 1800=60%, 2400=80%, 3000=100%
+    # 30= 1%, 60=2%, 100=3%, 300=10%, 900=30%, 1800=60%, 2400=80%, 3000=100% of original full training data
     percents = (30,60,100,300,900,1800,2400,3000) 
-    
+
     # batch size for training data should be assigned according since it's taken from the amount of training labeled data available 
-    #batchs = (10,16,30,40,50,50,70,70) 
-    batchs = (10,10,10,10,10,10,10,10) 
+    batchs = (10,16,30,40,50,50,70,70) 
+    #batchs = (10,10,10,10,10,10,10,10) 
+    
     results = []
     
     # training the gan model for each percentage of labeled data
-    for j in range(1):
+    for j in range(5):
         for sample1, n_batchs in zip(percents, batchs):
             
             dataset = load_real_samples(X, y)

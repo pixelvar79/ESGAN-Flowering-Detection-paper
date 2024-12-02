@@ -13,7 +13,7 @@ dir_img = os.path.join(base_dir, 'IMG')
 
 dir_gt = os.path.join(base_dir, 'groundtruth')
 
-dir_out = os.path.join(base_dir, 'output/output')
+dir_out = os.path.join(base_dir, 'output')
 # Create the output directory if it does not exist
 os.makedirs(dir_out, exist_ok=True)
 

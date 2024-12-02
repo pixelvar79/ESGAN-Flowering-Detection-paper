@@ -3,7 +3,7 @@
 import pandas as pd
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from pathlib import Path
-from directories import dir_img, dir_img1, dir_gt, dir_out
+from directories import dir_img, dir_gt, dir_out
 from data_loader import load_dataset
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
@@ -12,7 +12,7 @@ import tensorflow as tf
 
 # Load dataset
 
-X, y = load_dataset(dir_img1, dir_gt)
+X, y = load_dataset(dir_img, dir_gt)
 
 # Function to load and preprocess real samples
 def load_real_samples(X111, y111):
@@ -85,27 +85,28 @@ results = []
 
 # Sample size label mapping
 sample_size_mapping = {
-    32: 1,
+    30: 1,
     60: 2,
     100: 3,
     300: 10,
     900: 30,
     1800: 60,
     2400: 80,
-    2800: 100
+    3000: 100
 }
 
 # Iterate over the predictions to create the results DataFrame
 for model_name, data in predictions.items():
     parts = model_name.split('_')
-    sample_size_label = int(parts[-3])
-    iteration = int(parts[-2])
+    #sample_size_label = int(parts[-3])
+    sample_size_label = int(parts[-2])
+    #iteration = int(parts[-2])
     updated_model_name = 'ESGAN'
     
     indices = data['index_test'].values  # Corrected to access the values directly
     y_pred = data['y_pred']
     y_test = data['y_test']
-    iteration_n = iteration
+    #iteration_n = iteration
     
     for i, idx in enumerate(indices):
         sample_size_label1 = sample_size_mapping.get(sample_size_label, None)
@@ -118,7 +119,7 @@ for model_name, data in predictions.items():
             'sample_size_label': sample_size_label,
             'sample_size_label1': sample_size_label1,
             'index_test': idx,
-            'iteration_n': iteration_n
+            #'iteration_n': iteration_n
         })
 
 # Convert results to DataFrame
@@ -135,14 +136,15 @@ metrics = []
 for model_name, data in predictions.items():
     # Extract sample_size_label and updated model_name
     parts = model_name.split('_')
-    sample_size_label = int(parts[-3])
-    iteration = int(parts[-2])
+    #sample_size_label = int(parts[-3])
+    sample_size_label = int(parts[-2])
+    #iteration = int(parts[-2])
     updated_model_name = 'ESGAN'
     
     indices = data['index_test']
     y_pred = data['y_pred']
     y_test = data['y_test']
-    iteration_n = iteration
+    #iteration_n = iteration
     
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, average='weighted')
@@ -157,7 +159,8 @@ for model_name, data in predictions.items():
         'sample_size_label1': sample_size_label1,
         'accuracy': accuracy,
         'f1': f1,
-        'iteration_n': iteration_n
+        #'iteration_n': iteration_n
+        'iteration_n': 0
     })
 
 # Convert metrics to DataFrame
@@ -167,6 +170,6 @@ metrics_df = pd.DataFrame(metrics)
 print(metrics_df)
 
 # Save the results DataFrame to a CSV file
-metrics_df.to_csv(os.path.join(dir_out, 'esgan_models_metrics.csv'), index=False)
+metrics_df.to_csv(os.path.join(dir_out, 'esgan_models_metrics1.csv'), index=False)
 
 print('Metrics saved successfully.')

@@ -10,7 +10,7 @@ from tabulate import tabulate  # Import tabulate
 palette = ['#1B9E77', '#D95F02', '#7570B3', '#E7298A', '#00008B']
 
 # Set output directory
-output_dir = '../output/output'
+output_dir = '/output'
 
 def plot_metrics(col, data):
     plt.figure()

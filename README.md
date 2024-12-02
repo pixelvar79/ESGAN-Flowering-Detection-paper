@@ -25,7 +25,19 @@ Build local Conda virtual environment and dependencies
 ```
 This was the last version of Tensorflow in native Windows that supports GPU, otherwise it should be implemented in WSL Linux node or native Linux OS.
 
-This is a description on how py files are strcutured for implementing the manuscript analysis.
+The following workflow describes how py files are structured to implement the manuscript analysis.
 
-## Diagram 
+
 ![App Implementation](./workflow.png)
+
+1) Download data from Illinois Data Bank repository (https://doi.org/10.13012/B2IDB-8462244_V2) and place IMG folder and ground_truth.csv accordingly.
+  
+2) Execute the analysis via command line in the local conda env created above
+
+```
+
+python train_evaluate_benchmarks_models.py
+
+python train_gan.py
+
+python plot_metrics.py

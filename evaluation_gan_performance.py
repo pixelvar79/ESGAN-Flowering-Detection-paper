@@ -31,19 +31,19 @@ def load_real_samples(X111, y111):
     
     return [x_train, x_test, y_train, y_test, index_train, index_test]
 
-# Directory containing GAN models
-dir_source = '../output/head50/gan'
 
-# List of specific model filenames
+dir_source = '../output/ganmodels'
+
+
 model_filenames = [
-    'c_model_6760_GAN_100_0_111.h5',
-    'c_model_2666_GAN_1800_0_111.h5',
-    'c_model_3534_GAN_2400_0_111.h5',
-    'c_model_12152_GAN_2800_0_111.h5',
-    'c_model_8556_GAN_300_0_111.h5',
-    'c_model_28449_GAN_32_0_111.h5',
-    'c_model_35496_GAN_60_0_111.h5',
-    'c_model_0434_GAN_900_0_111.h5'
+    'c_model_GAN_100_111.h5',
+    'c_model_GAN_1800_111.h5',
+    'c_model_GAN_2400_111.h5',
+    'c_model_GAN_3000_111.h5',
+    'c_model_GAN_300_111.h5',
+    'c_model_GAN_30_111.h5',
+    'c_model_GAN_60_111.h5',
+    'c_model_GAN_900_111.h5'
 ]
 
 # Dictionary to store predictions and corresponding indices
